@@ -10,7 +10,6 @@ import { useNavigate } from 'react-router-dom';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/16/solid';
 
 const Login = ({ isLoggingIn }) => {
-	const [image, setImage] = useState(null);
 	const [loading, setLoading] = useState(false)
 	const navigate = useNavigate()
 	const [password, setPassword] = useState('');
@@ -112,12 +111,11 @@ const Login = ({ isLoggingIn }) => {
 			}
 
 			const res = await createUserWithEmailAndPassword(auth, email, password);
-			// const imgUrl = await upload(profile);
 
 			await setDoc(doc(db, "users", res.user.uid), {
 				username,
 				email,
-				avatar: "https://easy-peasy.ai/cdn-cgi/image/quality=80,format=auto,width=700/https://fdczvxmwwjwpwbeeqcth.supabase.co/storage/v1/object/public/images/18fafc59-b8f8-4cfd-adb0-ebda9da48e03/4721eea8-03cf-4935-aa3d-0e74bdd2d034.png",
+				avatar: image,
 				id: res.user.uid,
 				blocked: [],
 				usernameLower
@@ -157,6 +155,28 @@ const Login = ({ isLoggingIn }) => {
 		}
 	}
 
+	const [image, setImage] = useState(null);
+	const [dialogOpen, setDialogOpen] = useState(false);
+
+	// Example image list
+	const imageList = [
+		"profile/avatar-svgrepo-com (1).svg",
+		"profile/avatar-svgrepo-com (2).svg",
+		"profile/avatar-svgrepo-com (3).svg",
+		"profile/avatar-svgrepo-com (4).svg",
+		"profile/avatar-svgrepo-com (5).svg",
+		"profile/avatar-svgrepo-com (6).svg",
+		"profile/avatar-svgrepo-com (7).svg",
+		"profile/avatar-svgrepo-com (8).svg",
+		"profile/avatar-svgrepo-com (9).svg",
+		"profile/avatar-svgrepo-com (10).svg",
+	];
+
+	// Handle image selection
+	const handleImageSelect = (imgSrc) => {
+		setImage(imgSrc);
+	};
+
 	return (
 		<>
 			<Notification />
@@ -173,34 +193,72 @@ const Login = ({ isLoggingIn }) => {
 					className="w-96 h-auto mx-auto"
 				/>
 
-
-
-
 				<h2 className="text-2xl font-semibold text-center mb-7">{isLoggingIn ? "Sign in" : "Create Account"}</h2>
 
-				`<form onSubmit={isLoggingIn ? handleSignin : handleSignup}>
-					{!isLoggingIn && <div className="flex justify-center items-center flex-col gap-6 mb-6">
-						<div className="avatar relative">
-							<div className={"w-32 h-32 rounded-full overflow-hidden " + (!image ? "border" : "")}>
+				<form onSubmit={isLoggingIn ? handleSignin : handleSignup}>
+					{!isLoggingIn && (
+						<div className="flex justify-center items-center flex-col gap-6 mb-6">
+							<div
+								className="avatar w-32 h-32 rounded-full overflow-hidden border cursor-pointer justify-center items-center"
+								onClick={() => setDialogOpen(true)}
+							>
 								{image ? (
-									<img src={image} alt="Preview" className="object-cover w-full h-full" />
+									<img src={image} alt="Selected Avatar" className="object-cover w-full h-full" />
 								) : (
-									<div className="flex items-center justify-center w-full h-full text-gray-400">
-										Upload Profile
-									</div>
-								)}
-							</div>`
 
-							<input
-								name='profile'
-								type="file"
-								accept="image/*"
-								onChange={handleImageChange}
-								className="absolute inset-0 opacity-0 cursor-pointer"
-								required
-							/>
+									<input
+										type="text"
+										name="selectedImage"
+										value="Select Image"
+										className="text-center bg-transparent border-none cursor-pointer"
+										required
+									/>
+								)}
+							</div>
+
+							{/* DaisyUI Modal */}
+							<input type="checkbox" id="image-selection-modal" className="modal-toggle" />
+							{dialogOpen && (
+								<div className="modal modal-open">
+									<div className="modal-box">
+										<h2 className="text-lg font-bold mb-4">Choose Your Profile Image</h2>
+										<div className="grid grid-cols-3 gap-4">
+											{imageList.map((imgSrc, index) => (
+												<div
+													key={index}
+													className={`cursor-pointer border-2 rounded-lg ${imgSrc === image ? "border-blue-500" : "border-transparent"
+														}`}
+													onClick={() => handleImageSelect(imgSrc)}
+												>
+													<img
+														src={imgSrc}
+														alt={`Option ${index}`}
+														className="object-cover w-24 h-24 rounded-lg"
+													/>
+												</div>
+											))}
+										</div>
+										<div className="modal-action">
+											<label
+												htmlFor="image-selection-modal"
+												className="btn btn-sm bg-gray-500 text-white hover:bg-gray-600"
+												onClick={() => setDialogOpen(false)}
+											>
+												Cancel
+											</label>
+											<label
+												htmlFor="image-selection-modal"
+												className="btn btn-sm bg-blue-500 text-white hover:bg-blue-600"
+												onClick={() => setDialogOpen(false)}
+											>
+												Confirm
+											</label>
+										</div>
+									</div>
+								</div>
+							)}
 						</div>
-					</div>}
+					)}
 
 					<label className="input input-bordered flex items-center gap-2 mb-4 min-w-[20vw]">
 						<svg
